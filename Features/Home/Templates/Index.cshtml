@@ -1,0 +1,105 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/scripts/htmx.js"></script>
+    <script src="/scripts/htmx-antiforgery.js"></script>
+    <script src="/scripts/winbox.min.js"></script>
+    <script src="/scripts/app.js"></script>
+
+    <link rel="stylesheet" href="/styles/bulma.min.css">
+    <link rel="stylesheet" href="/styles/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <meta charset="utf-8"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <title></title>
+</head>
+<body hx-target="closest .component">
+<div id="toasts"></div>
+<div class="columns">
+    <div class="column">
+        <div class="card" id="content-1">
+            <header class="card-header">
+                <p class="card-header-title">
+                    ToDos
+                </p>
+                <button class="card-header-icon" aria-label="more options" onclick="loadW(this, 'content-1');">
+                    <span class="icon">
+                        <i class="fa-solid fa-window-restore"></i>
+                    </span>
+                </button>
+            </header>
+            <div class="card-content">
+                <div class="content component">
+                    <a href="#" hx-get="/todos">Load ToDo component</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="column">
+        <div class="card" id="content-2">
+            <header class="card-header">
+                <p class="card-header-title">
+                    ToDos
+                </p>
+                <button class="card-header-icon" aria-label="more options" onclick="loadW(this, 'content-2');">
+                    <i class="fa-solid fa-window-restore"></i>
+                </button>
+            </header>
+            <div class="card-content">
+                <div class="content component">
+                    <a href="#" hx-get="/todos">Load ToDo component</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="columns">
+    <div class="column">
+        <div class="card" id="content-3">
+            <header class="card-header">
+                <p class="card-header-title">
+                    ToDos
+                </p>
+                <button class="card-header-icon" aria-label="more options" onclick="loadW(this, 'content-3');">
+                    <i class="fa-solid fa-window-restore"></i>
+                </button>
+            </header>
+            <div class="card-content">
+                <div class="content component">
+                    <a href="#" hx-get="/todos">Load ToDo component</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="column">
+        <div class="card" id="content-4">
+            <header class="card-header">
+                <p class="card-header-title">
+                    ToDos
+                </p>
+                <button class="card-header-icon" aria-label="more options" onclick="loadW(this, 'content-4');">
+                    <i class="fa-solid fa-window-restore"></i>
+                </button>
+            </header>
+            <div class="card-content">
+                <div class="content component">
+                    <a href="#" hx-get="/todos">Load ToDo component</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<a href="swagger/index.html">Swagger</a>
+</body>
+</html>

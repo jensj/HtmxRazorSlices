@@ -1,0 +1,22 @@
+﻿@inherits RazorSliceHttpResult<IEnumerable<HtmxRazorSlices.Features.ToDoFeature.Models.ViewToDo>>
+
+@foreach (var toDo in Model)
+{
+    <tr>
+        <td class="nowrap">
+            @toDo.Due.ToString("yyyy-MM-dd")
+        </td>
+        <td>
+            @toDo.Description
+        </td>
+        <td class="nowrap">
+            @toDo.CompletedDate?.ToString("yyyy-MM-dd")
+        </td>
+        <td class="has-text-right nowrap">
+            <a class="button is-small is-primary" href="#" hx-post="/todos/@toDo.Id/toggle">@(toDo.IsCompleted ? "Reopen" : "Complete")</a>
+            <a class="button is-small" href="#" hx-get="/todos/@toDo.Id">View</a>
+            <a class="button is-small" href="#" hx-get="/todos/@toDo.Id/edit">Edit</a>
+            <a class="button is-small is-danger" href="#" hx-get="/todos/@toDo.Id/delete">Delete</a>
+        </td>
+    </tr>
+}

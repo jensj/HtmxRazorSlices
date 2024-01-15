@@ -1,0 +1,46 @@
+﻿@inherits RazorSliceHttpResult<HtmxRazorSlices.Features.ToDoFeature.Models.EditToDo>
+
+<form>
+    <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+            @if (Model.HasErrorsFor("Description"))
+            {
+                <input class="input is-danger" type="text" value="@Model.Description" name="Description">
+                @foreach (var error in Model.ErrorsFor(nameof(Model.Description)))
+                {
+                    <p class="help is-danger">@error.ErrorMessage</p>
+                }
+            }
+            else
+            {
+                <input class="input" type="text" value="@Model.Description" name="Description">
+            }
+        </div>
+        <label class="label">Due date</label>
+        <div class="control">
+            @if (Model.HasErrorsFor(nameof(Model.Due)))
+            {
+                <input class="input is-danger" type="date" value="@Model.Due" name="Due">
+                @foreach (var error in Model.ErrorsFor(nameof(Model.Due)))
+                {
+                    <p class="help is-danger">@error.ErrorMessage</p>
+                }
+            }
+            else
+            {
+                <input class="input" type="date" value="@Model.Due" name="Due">
+            }
+        </div>
+
+    </div>
+
+    <div class="field is-grouped">
+        <div class="control">
+            <button hx-put="/todos/@Model.Id" class="button is-link">Submit</button>
+        </div>
+        <div class="control">
+            <button hx-get="/todos" class="button is-link is-light">Cancel</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,23 @@
+﻿@inherits RazorSliceHttpResult<HtmxRazorSlices.Features.ToDoFeature.Models.ViewToDo>
+<h3>Do you really want to delete this ToDo?</h3>
+<dl>
+    <dt>Id</dt>
+    <dd>@Model.Id</dd>
+    <dt>Description</dt>
+    <dd>@Model.Description</dd>
+    <dt>Due</dt>
+    <dd>@Model.Due.ToString("yyyy-MM-dd")</dd>
+    <dt>Completed</dt>
+    <dd>@(Model.IsCompleted ? Model.CompletedDate?.ToString("yyyy-MM-dd") : "Not yet completed")</dd>
+</dl>
+
+<footer class="card-footer">
+
+    <div class="control card-footer-item">
+        <button hx-get="/todos" class="button is-primary">Cancel</button>
+    </div>
+
+    <div class="control card-footer-item">
+        <button hx-delete="/todos/@Model.Id" class="button is-danger">Delete</button>
+    </div>
+</footer>

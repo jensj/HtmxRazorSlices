@@ -1,0 +1,34 @@
+﻿@using HtmxRazorSlices.Features.ToDoFeature
+@inherits RazorSliceHttpResult<HtmxRazorSlices.Features.ToDoFeature.Models.ListModel>
+
+@if (!Model.ToDos.Any())
+{
+    <div id="results">
+        <p hx-get="/todos" hx-trigger="todos-changed from:body">No ToDos found</p>
+    </div>
+}
+else
+{
+    <label for="q">Filter</label>
+    <input id="q" type="search" name="q" value="@Model.Filter" hx-get="/todos" hx-trigger="keyup delay:200ms changed, search" hx-target="next tbody" />
+
+    <div id="results">
+        <table id="todos-table" class="table is-narrow is-hoverable" hx-get="/todos" hx-trigger="todos-changed from:body">
+            <thead>
+                <tr>
+                    <th>Due</th>
+                    <th>Description</th>
+                    <th>Completed</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @await RenderPartialAsync($"{ToDoFeature.TemplatePath}_rows.cshtml", Model.ToDos)
+            </tbody>
+        </table>
+    </div>
+}
+
+<footer class="card-footer">
+    <a href="#" hx-get="/todos/create" class="card-footer-item">Create new ToDo</a>
+</footer>

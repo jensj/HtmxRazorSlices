@@ -1,0 +1,11 @@
+﻿@inherits RazorSliceHttpResult<HtmxRazorSlices.Features.ToDoFeature.Models.ViewToDo>
+
+<table>
+    <tr><td class="has-text-weight-medium">Due</td><td>@Model.Due.ToString("yyyy-MM-dd")</td></tr>
+    <tr><td class="has-text-weight-medium">Description</td><td>@Model.Description</td></tr>
+    <tr><td class="has-text-weight-medium">Completed</td><td>@Model.CompletedDate?.ToString("yyyy-MM-dd")</td></tr>
+</table>
+
+<footer class="card-footer">
+    <a href="#" hx-get="/todos" class="card-footer-item">Back</a>
+</footer>
