@@ -33,4 +33,3 @@ public class ErrorResult : Result, IErrorResult
     public string Message { get; }
     public IReadOnlyCollection<Error> Errors { get; }
 }
-
