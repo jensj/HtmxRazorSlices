@@ -4,7 +4,7 @@ namespace HtmxRazorSlices.Data;
 
 public class ToDoDb : IToDoDb
 {
-    private readonly List<ToDo> _todos = new() { new ToDo() { Description = "aaa" }, new ToDo() { Description = "bbb" } };
+    private readonly List<ToDo> _todos = [new ToDo { Description = "Feed the cat", DueDate = DateOnly.FromDateTime(DateTime.Now) }, new ToDo { Description = "Water the plants", DueDate = DateOnly.FromDateTime(DateTime.Now).AddDays(2) }];
 
     public Task<IOrderedEnumerable<ToDo>> GetAllToDosAsync(CancellationToken cancellationToken)
     {

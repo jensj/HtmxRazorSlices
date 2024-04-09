@@ -6,7 +6,7 @@ namespace HtmxRazorSlices.Features.ToDoFeature.Commands;
 
 public class CreateToDoCommand : IRequest<Result<ToDo>>
 {
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
 
     public DateOnly Due { get; set; }
 }

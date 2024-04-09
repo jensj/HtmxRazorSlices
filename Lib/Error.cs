@@ -6,6 +6,6 @@ public class Error(string? code, string details)
     {
     }
 
-    public string Code { get; }
-    public string Details { get; }
+    public string Code { get; } = string.Empty;
+    public string Details { get; } = string.Empty;
 }

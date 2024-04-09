@@ -1,10 +1,7 @@
-﻿using HtmxRazorSlices.Domain;
+﻿namespace HtmxRazorSlices.Features.ToDoFeature.Models;
 
-namespace HtmxRazorSlices.Features.ToDoFeature.Models
+public class ListModel
 {
-    public class ListModel
-    {
-        public string? Filter{ get; set; }
-        public IEnumerable<ViewToDo> ToDos { get; set; }
-    }
+    public string? Filter { get; init; }
+    public IEnumerable<ViewToDo> ToDos { get; init; } = Enumerable.Empty<ViewToDo>();
 }

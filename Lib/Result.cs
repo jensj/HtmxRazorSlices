@@ -12,5 +12,4 @@ public abstract class Result<T>(T? data) : Result
 public abstract class Result
 {
     public bool Success { get; protected init; }
-    public bool Failure => !Success;
 }
