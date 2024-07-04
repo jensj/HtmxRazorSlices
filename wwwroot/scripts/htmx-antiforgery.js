@@ -1,20 +1,20 @@
 ﻿document.addEventListener("htmx:configRequest", (evt) => {
-    let httpVerb = evt.detail.verb.toUpperCase();
+    const httpVerb = evt.detail.verb.toUpperCase();
     if (httpVerb === 'GET') return;
 
-    let antiforgeryResponse =  httpGet("/antiforgery").slice(1,-1);
+    const afResponse = httpGet("/antiforgery").slice(1,-1);
         
-    const parts = antiforgeryResponse.split("|");
+    const parts = afResponse.split("|");
 
-    let formFieldName = parts[0];
-    let antiforgeryToken = parts[1];
+    const formFieldName = parts[0];
+    const afToken = parts[1];
 
-    evt.detail.parameters[formFieldName] = antiforgeryToken;
+    evt.detail.parameters[formFieldName] = afToken;
 });
 
 function httpGet(url)
 {
-    let xmlHttp = new XMLHttpRequest();
+    const xmlHttp = new XMLHttpRequest();
     xmlHttp.open( "GET", url, false );
     xmlHttp.send( null );
     return xmlHttp.responseText;

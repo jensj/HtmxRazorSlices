@@ -1,6 +1,7 @@
-﻿using HtmxRazorSlices.Data;
+﻿using FluentResults;
+using HtmxRazorSlices.Data;
 using HtmxRazorSlices.Domain;
-using HtmxRazorSlices.Lib;
+
 using MediatR;
 
 namespace HtmxRazorSlices.Features.ToDoFeature.Commands;
@@ -10,12 +11,12 @@ public class UpdateToDoCommandHandler(IToDoDb db) : IRequestHandler<UpdateToDoCo
     public async Task<Result<ToDo>> Handle(UpdateToDoCommand request, CancellationToken cancellationToken)
     {
         var toDo = await db.GetToDoAsync(request.Id, cancellationToken);
-        if (toDo == null) return new ErrorResult<ToDo>("Not found");
+        if (toDo == null) return Result.Fail("Not found");
 
         toDo.Description = request.Description;
         toDo.DueDate = request.Due;
 
         await db.UpdateToDoAsync(toDo, cancellationToken);
-        return new SuccessResult<ToDo>(toDo);
+        return Result.Ok(toDo);
     }
 }

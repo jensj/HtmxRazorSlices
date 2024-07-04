@@ -12,8 +12,8 @@ public class GetAllToDosQueryHandler(IToDoDb db) : IRequestHandler<GetAllToDosQu
 
         if (!string.IsNullOrWhiteSpace(request.Filter))
             toDos = toDos
-                    .Where(toDo => toDo.Description.Contains(request.Filter, StringComparison.OrdinalIgnoreCase))
-                    .OrderBy(toDo => toDo.Id);
+                .Where(toDo => toDo.Description.Contains(request.Filter, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(toDo => toDo.DueDate);
 
         return await Task.FromResult(toDos.Select(toDo => new ViewToDo(toDo)));
     }

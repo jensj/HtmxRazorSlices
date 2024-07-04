@@ -1,6 +1,6 @@
-﻿using HtmxRazorSlices.Data;
+﻿using FluentResults;
+using HtmxRazorSlices.Data;
 using HtmxRazorSlices.Domain;
-using HtmxRazorSlices.Lib;
 using MediatR;
 
 namespace HtmxRazorSlices.Features.ToDoFeature.Queries;
@@ -11,6 +11,6 @@ public class GetToDoQueryHandler(IToDoDb db) : IRequestHandler<GetToDoQuery, Res
     {
         var toDo = await db.GetToDoAsync(request.Id, cancellationToken);
 
-        return toDo == null ? new ErrorResult<ToDo>("Not found") : new SuccessResult<ToDo>(toDo);
+        return toDo == null ? Result.Fail("Not found") : Result.Ok(toDo);
     }
 }

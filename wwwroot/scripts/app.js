@@ -1,13 +1,13 @@
-﻿async function myFunction() {
-    let arr = document.getElementsByClassName("component");
+﻿async function initWindows() {
+    const components = document.getElementsByClassName("component");
 
-    for (let i = 0; i < arr.length; i++) {
-        new WinBox("Mount DOM " + i, { mount: arr[i] });
+    for (let i = 0; i < components.length; i++) {
+        new WinBox("component_" + i, { mount: components[i] });
     }
 }
 
 async function loadW(caller, target) {
-    let t = document.getElementById(target)
+    const t = document.getElementById(target);
     caller.style.display = caller.style.display === 'none' ? '' : 'none';
     await new WinBox("Pop-up ", {
         mount: t, onclose: function () {

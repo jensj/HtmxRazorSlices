@@ -1,6 +1,6 @@
-﻿using HtmxRazorSlices.Data;
+﻿using FluentResults;
+using HtmxRazorSlices.Data;
 using HtmxRazorSlices.Domain;
-using HtmxRazorSlices.Lib;
 using MediatR;
 
 namespace HtmxRazorSlices.Features.ToDoFeature.Commands;
@@ -13,6 +13,6 @@ public class CreateToDoCommandHandler(IToDoDb db) : IRequestHandler<CreateToDoCo
 
         await db.CreateToDoAsync(toDo, cancellationToken);
 
-        return new SuccessResult<ToDo>(toDo);
+        return Result.Ok(toDo);
     }
 }
