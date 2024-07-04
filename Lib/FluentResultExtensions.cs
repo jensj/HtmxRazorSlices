@@ -2,7 +2,7 @@
 
 namespace HtmxRazorSlices.Lib;
 
-public static class FluentResultHelper
+public static class FluentResultExtensions
 {
     public static IResult ToErrorResponse(this ResultBase result)
     {
