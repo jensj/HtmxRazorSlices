@@ -6,14 +6,19 @@ using MediatR;
 
 namespace HtmxRazorSlices.Features.ToDoFeature.Commands;
 
-public class ToggleToDoCommandHandler(IToDoDb db) : IRequestHandler<ToggleToDoCommand, Result<ToDo>>
+public class ToggleToDoCommandHandler(IToDoDb db) : IRequestHandler<ToDoSetStatusCommand, Result<ToDo>>
 {
-    public async Task<Result<ToDo>> Handle(ToggleToDoCommand request, CancellationToken cancellationToken)
+    public async Task<Result<ToDo>> Handle(ToDoSetStatusCommand request, CancellationToken cancellationToken)
     {
         var toDo = await db.GetToDoAsync(request.Id, cancellationToken);
         if (toDo == null) return Result.Fail("Not found");
 
-        toDo.CompletedDate = toDo.CompletedDate.HasValue ? null : DateOnly.FromDateTime(DateTime.Today);
+        if(request.Status == ToDo.Complete)
+            toDo.CompletedDate = DateOnly.FromDateTime(DateTime.Today);
+        else
+            toDo.CompletedDate = null;
+
+        //toDo.CompletedDate = toDo.CompletedDate.HasValue ? null : DateOnly.FromDateTime(DateTime.Today);
 
         await db.UpdateToDoAsync(toDo, cancellationToken);
         return Result.Ok(toDo);

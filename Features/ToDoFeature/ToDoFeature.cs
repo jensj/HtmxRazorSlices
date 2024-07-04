@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using HtmxRazorSlices.Domain;
 using HtmxRazorSlices.Features.ToDoFeature.Commands;
 using HtmxRazorSlices.Features.ToDoFeature.Models;
 using HtmxRazorSlices.Features.ToDoFeature.Queries;
@@ -20,16 +21,40 @@ public static class ToDoFeature
     /// <param name="app">The web application.</param>
     public static void RegisterToDoFeature(this WebApplication app)
     {
-        // GET
+        // CREATE
+        app.MapGet($"{RouteBasePath}/create", () => Results.Extensions.RazorSlice($"{TemplatePath}Create.cshtml", new CreateToDoModel()));
+        app.MapPost($"{RouteBasePath}", async (IMediator mediator, [FromForm] CreateToDoModel model, IValidator<CreateToDoModel> validator, HttpContext context) =>
+        {
+            model.AddValidationResult(await validator.ValidateAsync(model));
+
+            if (model.Errors.Count != 0) return Results.Extensions.RazorSlice($"{TemplatePath}Create.cshtml", model);
+
+            var result = await mediator.Send(new CreateToDoCommand { Description = model.Description, Due = DateOnly.Parse(model.Due) });
+
+            if (result.IsSuccess)
+            {
+                context.Trigger(TodoEvents.ToDosChanged);
+                return await ToDosList(mediator);
+            }
+
+            return result.ToErrorResponse();
+        });
+
+        // READ
         app.MapGet(RouteBasePath, async (IMediator mediator, HttpContext context, [FromQuery] string? q) =>
         {
-            var allToDos = await mediator.Send(new GetAllToDosQuery(q), CancellationToken.None);
+            var result = await mediator.Send(new GetToDosQuery(q), CancellationToken.None);
 
-            if (context.Request.Headers["HX-Trigger"].Contains("q"))
-                return Results.Extensions.RazorSlice($"{TemplatePath}_rows.cshtml", allToDos);
+            if (result.IsSuccess)
+            {
+                // Request was triggered by the search box, return only the rows
+                if (context.Request.Headers["HX-Trigger"].Contains("q"))
+                    return Results.Extensions.RazorSlice($"{TemplatePath}_rows.cshtml", result.Value);
 
-            return Results.Extensions.RazorSlice($"{TemplatePath}List.cshtml",
-                new ListModel { ToDos = allToDos, Filter = q });
+                return Results.Extensions.RazorSlice($"{TemplatePath}List.cshtml", new ListModel { ToDos = result.Value, Filter = q });
+            }
+
+            return result.ToErrorResponse();
         });
         app.MapGet($"{RouteBasePath}/{{id}}", async (IMediator mediator, string id) =>
         {
@@ -38,28 +63,30 @@ public static class ToDoFeature
             if (result.IsSuccess)
                 return Results.Extensions.RazorSlice($"{TemplatePath}Detail.cshtml", new ViewToDo(result.Value));
 
-            return Results.BadRequest(result.Errors.Select(error => error.Message));
+            return result.ToErrorResponse();
         });
 
-        // EDIT
+        // UPDATE
         app.MapGet($"{RouteBasePath}/{{id}}/edit", async (IMediator mediator, string id) =>
         {
             var result = await mediator.Send(new GetToDoQuery(id), CancellationToken.None);
 
-            if (!result.IsSuccess) return Results.BadRequest(result.Errors.Select(error => error.Message));
-
-            var toDo = result.Value;
-            var model = new EditToDo
+            if (result.IsSuccess)
             {
-                Id = toDo.Id,
-                Due = toDo.DueDate.ToString("yyyy-MM-dd"),
-                CompletedDate = toDo.CompletedDate?.ToString("yyyy-MM-dd"),
-                Description = toDo.Description
-            };
-            return Results.Extensions.RazorSlice($"{TemplatePath}Edit.cshtml", model);
+                var toDo = result.Value;
+                var model = new EditToDo
+                {
+                    Id = toDo.Id,
+                    Due = toDo.DueDate.ToString("yyyy-MM-dd"),
+                    CompletedDate = toDo.CompletedDate?.ToString("yyyy-MM-dd"),
+                    Description = toDo.Description
+                };
+                return Results.Extensions.RazorSlice($"{TemplatePath}Edit.cshtml", model);
+            }
+
+            return result.ToErrorResponse();
         });
-        app.MapPut($"{RouteBasePath}/{{id}}", async (IMediator mediator, [FromRoute] string id,
-            [FromForm] EditToDo model, IValidator<EditToDo> validator, HttpContext context) =>
+        app.MapPut($"{RouteBasePath}/{{id}}", async (IMediator mediator, [FromRoute] string id, [FromForm] EditToDo model, IValidator<EditToDo> validator, HttpContext context) =>
         {
             model.Id = id;
             model.AddValidationResult(await validator.ValidateAsync(model));
@@ -80,25 +107,6 @@ public static class ToDoFeature
             context.Trigger(TodoEvents.ToDosChanged);
 
             return await ToDosList(mediator);
-        });
-
-        // CREATE
-        app.MapGet($"{RouteBasePath}/create", () => Results.Extensions.RazorSlice($"{TemplatePath}Create.cshtml", new CreateToDoModel()));
-        app.MapPost($"{RouteBasePath}", async (IMediator mediator, [FromForm] CreateToDoModel model, IValidator<CreateToDoModel> validator, HttpContext context) =>
-        {
-            model.AddValidationResult(await validator.ValidateAsync(model));
-
-            if (model.Errors.Count != 0) return Results.Extensions.RazorSlice($"{TemplatePath}Create.cshtml", model);
-
-            var result = await mediator.Send(new CreateToDoCommand { Description = model.Description, Due = DateOnly.Parse(model.Due) });
-
-            if (result.IsSuccess)
-            {
-                context.Trigger(TodoEvents.ToDosChanged);
-                return await ToDosList(mediator);
-            }
-
-            return Results.BadRequest(result.Errors.Select(error => error.Message));
         });
 
         // DELETE
@@ -126,25 +134,41 @@ public static class ToDoFeature
             return Results.BadRequest(result.Errors.Select(error => error.Message));
         });
 
-        // Toggle the status of a task
-        app.MapPost($"{RouteBasePath}/{{id}}/toggle", async (IMediator mediator, string id, HttpContext context) =>
+        // ACTIONS
+        app.MapPost($"{RouteBasePath}/{{id}}/complete", async (IMediator mediator, string id, HttpContext context) =>
         {
-            var result = await mediator.Send(new ToggleToDoCommand { Id = id }, CancellationToken.None);
+            var result = await mediator.Send(new ToDoSetStatusCommand { Id = id, Status = ToDo.Complete }, CancellationToken.None);
 
             if (result.IsSuccess)
             {
                 context.Trigger(TodoEvents.ToDosChanged);
-
                 return await ToDosList(mediator);
             }
 
-            return Results.BadRequest(result.Errors.Select(error => error.Message));
+            return result.ToErrorResponse();
+        });
+        app.MapPost($"{RouteBasePath}/{{id}}/reopen", async (IMediator mediator, string id, HttpContext context) =>
+        {
+            var result = await mediator.Send(new ToDoSetStatusCommand { Id = id, Status = ToDo.Reopen }, CancellationToken.None);
+
+            if (result.IsSuccess)
+            {
+                context.Trigger(TodoEvents.ToDosChanged);
+                return await ToDosList(mediator);
+            }
+
+            return result.ToErrorResponse();
         });
     }
 
+    // Helper method to return the list of ToDos
     private static async Task<IResult> ToDosList(IMediator mediator)
     {
-        var allToDos = await mediator.Send(new GetAllToDosQuery(), CancellationToken.None);
-        return Results.Extensions.RazorSlice($"{TemplatePath}List.cshtml", new ListModel { ToDos = allToDos });
+        var result = await mediator.Send(new GetToDosQuery(), CancellationToken.None);
+
+        if (result.IsSuccess)
+            return Results.Extensions.RazorSlice($"{TemplatePath}List.cshtml", new ListModel { ToDos = result.Value });
+
+        return result.ToErrorResponse();
     }
 }

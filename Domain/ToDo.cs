@@ -6,4 +6,9 @@ public class ToDo
     public string Description { get; set; } = string.Empty;
     public DateOnly DueDate { get; set; } = DateOnly.FromDateTime(DateTime.Now.AddDays(7));
     public DateOnly? CompletedDate { get; set; }
+
+    public static string Complete = "Complete";
+    public static string Reopen = "Reopen";
+
+
 }
