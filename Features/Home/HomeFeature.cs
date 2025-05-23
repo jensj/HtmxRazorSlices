@@ -10,7 +10,7 @@ public static class HomeFeature
 
     public static void RegisterHomeFeature(this WebApplication app)
     {
-        app.MapGet(RouteBasePath, () => Results.Extensions.RazorSlice($"{TemplatePath}Index.cshtml"));
+        app.MapGet(RouteBasePath, () => Results.Extensions.RazorSlice<Templates.Index>());
 
         app.MapGet($"{RouteBasePath}antiforgery", (IAntiforgery antiforgery, IHttpContextAccessor context) =>
         {

@@ -1,4 +1,6 @@
 ﻿@using HtmxRazorSlices.Features.ToDoFeature
+@using HtmxRazorSlices.Features.ToDoFeature.Models
+@using HtmxRazorSlices.Features.ToDoFeature.Templates
 @inherits RazorSliceHttpResult<HtmxRazorSlices.Features.ToDoFeature.Models.ListModel>
 
 @if (!Model.ToDos.Any())
@@ -23,7 +25,8 @@ else
                 </tr>
             </thead>
             <tbody>
-                @await RenderPartialAsync($"{ToDoFeature.TemplatePath}_rows.cshtml", Model.ToDos)
+                @(await RenderPartialAsync<_rows, IEnumerable<ViewToDo>>(Model.ToDos))
+
             </tbody>
         </table>
     </div>

@@ -1,6 +1,6 @@
 ﻿namespace HtmxRazorSlices.Features.ToDoFeature.Models;
 
-public class EditToDo : ValidatableModel
+public class EditToDoModel : ValidatableModel
 {
     public string Id { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

@@ -2,7 +2,7 @@
 
 namespace HtmxRazorSlices.Features.ToDoFeature.Models;
 
-public class EditToDoValidator : AbstractValidator<EditToDo>
+public class EditToDoValidator : AbstractValidator<EditToDoModel>
 {
     public EditToDoValidator()
     {
