@@ -14,7 +14,20 @@ builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(Program).
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-builder.Services.AddSingleton<IToDoDb>(new ToDoDb());
+// Configure database storage
+var dbStorageOptions = builder.Configuration.GetSection(DbStorageOptions.SectionName).Get<DbStorageOptions>() ?? new DbStorageOptions();
+
+IToDoDb todoDb = dbStorageOptions.StorageType.ToLowerInvariant() switch
+{
+    "filesystem" => new FileSystemToDoDb(dbStorageOptions.LocalStoragePath ?? "./data"),
+    "azureblob" => new AzureBlobToDoDb(
+        dbStorageOptions.AzureBlobConnectionString ?? throw new InvalidOperationException("AzureBlobConnectionString is required for AzureBlob storage type"),
+        dbStorageOptions.AzureBlobContainerName ?? "todos"),
+    "inmemory" => new ToDoDb(),
+    _ => throw new InvalidOperationException($"Unknown storage type: {dbStorageOptions.StorageType}")
+};
+
+builder.Services.AddSingleton<IToDoDb>(todoDb);
 builder.Services.AddScoped<IUserIdentifierService, UserIdentifierService>();
 
 builder.Services.AddAntiforgery();
