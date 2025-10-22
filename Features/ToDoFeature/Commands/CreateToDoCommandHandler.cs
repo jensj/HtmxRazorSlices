@@ -9,7 +9,7 @@ public class CreateToDoCommandHandler(IToDoDb db) : IRequestHandler<CreateToDoCo
 {
     public async Task<Result<ToDo>> Handle(CreateToDoCommand request, CancellationToken cancellationToken)
     {
-        var toDo = new ToDo { Description = request.Description, DueDate = request.Due };
+        var toDo = new ToDo { UserId = request.UserId, Description = request.Description, DueDate = request.Due };
 
         await db.CreateToDoAsync(toDo, cancellationToken);
 

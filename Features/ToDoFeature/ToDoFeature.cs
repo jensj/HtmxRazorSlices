@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using FluentValidation;
+using HtmxRazorSlices.Data;
 using HtmxRazorSlices.Domain;
 using HtmxRazorSlices.Features.ToDoFeature.Commands;
 using HtmxRazorSlices.Features.ToDoFeature.Models;
@@ -18,9 +19,10 @@ public static class ToDoFeature
     public static void RegisterToDoFeature(this WebApplication app)
     {
         // GET
-        app.MapGet(RouteBasePath, async (IMediator mediator, HttpContext context, [FromQuery] string? q) =>
+        app.MapGet(RouteBasePath, async (IMediator mediator, IUserIdentifierService userIdentifierService, HttpContext context, [FromQuery] string? q) =>
         {
-            var allToDos = await mediator.Send(new GetAllToDosQuery(q), CancellationToken.None);
+            var userId = userIdentifierService.GetOrCreateUserId(context);
+            var allToDos = await mediator.Send(new GetAllToDosQuery(userId, q), CancellationToken.None);
 
             if (context.Request.Headers["HX-Trigger"].Contains("q"))
             {
@@ -29,9 +31,10 @@ public static class ToDoFeature
             return Results.Extensions.RazorSlice<ListToDos, ListModel>(new ListModel { ToDos = allToDos, Filter = q });
         });
 
-        app.MapGet($"{RouteBasePath}/{{id}}", async (IMediator mediator, string id) =>
+        app.MapGet($"{RouteBasePath}/{{id}}", async (IMediator mediator, IUserIdentifierService userIdentifierService, HttpContext context, string id) =>
         {
-            var result = await mediator.Send(new GetToDoQuery(id), CancellationToken.None);
+            var userId = userIdentifierService.GetOrCreateUserId(context);
+            var result = await mediator.Send(new GetToDoQuery(id, userId), CancellationToken.None);
 
             switch (result)
             {
@@ -45,9 +48,10 @@ public static class ToDoFeature
         });
 
         // EDIT
-        app.MapGet($"{RouteBasePath}/{{id}}/edit", async (IMediator mediator, string id) =>
+        app.MapGet($"{RouteBasePath}/{{id}}/edit", async (IMediator mediator, IUserIdentifierService userIdentifierService, HttpContext context, string id) =>
         {
-            var result = await mediator.Send(new GetToDoQuery(id), CancellationToken.None);
+            var userId = userIdentifierService.GetOrCreateUserId(context);
+            var result = await mediator.Send(new GetToDoQuery(id, userId), CancellationToken.None);
 
             switch (result)
             {
@@ -59,20 +63,21 @@ public static class ToDoFeature
                     return Results.StatusCode(500);
             }
         });
-        app.MapPut($"{RouteBasePath}/{{id}}", async (IMediator mediator, [FromRoute] string id, [FromForm] EditToDoModel model, IValidator<EditToDoModel> validator, HttpContext context) =>
+        app.MapPut($"{RouteBasePath}/{{id}}", async (IMediator mediator, IUserIdentifierService userIdentifierService, [FromRoute] string id, [FromForm] EditToDoModel model, IValidator<EditToDoModel> validator, HttpContext context) =>
         {
+            var userId = userIdentifierService.GetOrCreateUserId(context);
             model.Id = id;
             model.AddValidationResult(await validator.ValidateAsync(model));
 
             if (model.HasErrors) return Results.Extensions.RazorSlice<EditToDo, EditToDoModel>(model);
 
-            var result = await mediator.Send(new UpdateToDoCommand { Id = model.Id, Description = model.Description, Due = DateOnly.Parse(model.Due), CompletedDate = model.CompletedDate != null ? DateOnly.Parse(model.CompletedDate) : null }, CancellationToken.None);
+            var result = await mediator.Send(new UpdateToDoCommand { Id = model.Id, UserId = userId, Description = model.Description, Due = DateOnly.Parse(model.Due), CompletedDate = model.CompletedDate != null ? DateOnly.Parse(model.CompletedDate) : null }, CancellationToken.None);
 
             switch (result)
             {
                 case SuccessResult<ToDo>:
                     context.Response.Headers["HX-Trigger"] = "todos-changed";
-                    return await ListToDos(mediator);
+                    return await ListToDos(mediator, userIdentifierService, context);
                 case ErrorResult<ToDo> errorResult:
                     return Results.BadRequest(errorResult.Message);
                 default:
@@ -83,19 +88,20 @@ public static class ToDoFeature
         // CREATE
         app.MapGet($"{RouteBasePath}/create", () => Results.Extensions.RazorSlice<CreateToDo, CreateToDoModel>(new CreateToDoModel()));
 
-        app.MapPost($"{RouteBasePath}", async (IMediator mediator, [FromForm] CreateToDoModel model, IValidator<CreateToDoModel> validator, HttpContext context) =>
+        app.MapPost($"{RouteBasePath}", async (IMediator mediator, IUserIdentifierService userIdentifierService, [FromForm] CreateToDoModel model, IValidator<CreateToDoModel> validator, HttpContext context) =>
         {
+            var userId = userIdentifierService.GetOrCreateUserId(context);
             model.AddValidationResult(await validator.ValidateAsync(model));
 
             if (model.Errors.Count != 0) return Results.Extensions.RazorSlice<CreateToDo, CreateToDoModel>(model);
 
-            var result = await mediator.Send(new CreateToDoCommand { Description = model.Description, Due = DateOnly.Parse(model.Due) });
+            var result = await mediator.Send(new CreateToDoCommand { UserId = userId, Description = model.Description, Due = DateOnly.Parse(model.Due) });
 
             switch (result)
             {
                 case SuccessResult<ToDo>:
                     context.Response.Headers["HX-Trigger"] = "todos-changed";
-                    return await ListToDos(mediator);
+                    return await ListToDos(mediator, userIdentifierService, context);
                 case ErrorResult<ToDo> errorResult:
                     return Results.BadRequest(errorResult.Message);
                 default:
@@ -104,9 +110,10 @@ public static class ToDoFeature
         });
 
         // DELETE
-        app.MapGet($"{RouteBasePath}/{{id}}/delete", async (IMediator mediator, string id) =>
+        app.MapGet($"{RouteBasePath}/{{id}}/delete", async (IMediator mediator, IUserIdentifierService userIdentifierService, HttpContext context, string id) =>
         {
-            var result = await mediator.Send(new GetToDoQuery(id), CancellationToken.None);
+            var userId = userIdentifierService.GetOrCreateUserId(context);
+            var result = await mediator.Send(new GetToDoQuery(id, userId), CancellationToken.None);
 
             switch (result)
             {
@@ -118,15 +125,16 @@ public static class ToDoFeature
                     return Results.StatusCode(500);
             }
         });
-        app.MapDelete($"{RouteBasePath}/{{id}}", async (IMediator mediator, string id, HttpContext context) =>
+        app.MapDelete($"{RouteBasePath}/{{id}}", async (IMediator mediator, IUserIdentifierService userIdentifierService, string id, HttpContext context) =>
         {
-            var result = await mediator.Send(new DeleteToDoCommand(id), CancellationToken.None);
+            var userId = userIdentifierService.GetOrCreateUserId(context);
+            var result = await mediator.Send(new DeleteToDoCommand(id, userId), CancellationToken.None);
 
             switch (result)
             {
                 case SuccessResult:
                     context.Response.Headers["HX-Trigger"] = "todos-changed";
-                    return await ListToDos(mediator);
+                    return await ListToDos(mediator, userIdentifierService, context);
                 case ErrorResult errorResult:
                     return Results.BadRequest(errorResult.Message);
                 default:
@@ -135,15 +143,16 @@ public static class ToDoFeature
         });
 
         // Complete ToDo
-        app.MapPost($"{RouteBasePath}/{{id}}/toggle", async (IMediator mediator, string id, HttpContext context) =>
+        app.MapPost($"{RouteBasePath}/{{id}}/toggle", async (IMediator mediator, IUserIdentifierService userIdentifierService, string id, HttpContext context) =>
         {
-            var result = await mediator.Send(new ToggleToDoCommand { Id = id }, CancellationToken.None);
+            var userId = userIdentifierService.GetOrCreateUserId(context);
+            var result = await mediator.Send(new ToggleToDoCommand { Id = id, UserId = userId }, CancellationToken.None);
 
             switch (result)
             {
                 case SuccessResult<ToDo>:
                     context.Response.Headers["HX-Trigger"] = "todos-changed";
-                    return await ListToDos(mediator);
+                    return await ListToDos(mediator, userIdentifierService, context);
                 case ErrorResult<ToDo> errorResult:
                     return Results.BadRequest(errorResult.Message);
                 default:
@@ -152,9 +161,10 @@ public static class ToDoFeature
         });
     }
 
-    private static async Task<IResult> ListToDos(IMediator mediator)
+    private static async Task<IResult> ListToDos(IMediator mediator, IUserIdentifierService userIdentifierService, HttpContext context)
     {
-        var allToDos = await mediator.Send(new GetAllToDosQuery(), CancellationToken.None);
+        var userId = userIdentifierService.GetOrCreateUserId(context);
+        var allToDos = await mediator.Send(new GetAllToDosQuery(userId), CancellationToken.None);
         return Results.Extensions.RazorSlice<ListToDos, ListModel>(new ListModel { ToDos = allToDos });
     }
 }

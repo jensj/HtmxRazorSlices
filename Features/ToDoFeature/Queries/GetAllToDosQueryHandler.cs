@@ -8,7 +8,7 @@ public class GetAllToDosQueryHandler(IToDoDb db) : IRequestHandler<GetAllToDosQu
 {
     public async Task<IEnumerable<ViewToDo>> Handle(GetAllToDosQuery request, CancellationToken cancellationToken)
     {
-        var toDos = await db.GetAllToDosAsync(cancellationToken);
+        var toDos = await db.GetAllToDosAsync(request.UserId, cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(request.Filter))
             toDos = toDos

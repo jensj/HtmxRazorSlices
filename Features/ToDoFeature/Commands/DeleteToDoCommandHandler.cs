@@ -8,8 +8,8 @@ public class DeleteToDoCommandHandler(IToDoDb db) : IRequestHandler<DeleteToDoCo
 {
     public async Task<Result> Handle(DeleteToDoCommand request, CancellationToken cancellationToken)
     {
-        if ( await db.GetToDoAsync(request.Id, cancellationToken) == null) return new ErrorResult("Not found");
-        await db.DeleteToDoAsync(request.Id, cancellationToken);
+        if ( await db.GetToDoAsync(request.Id, request.UserId, cancellationToken) == null) return new ErrorResult("Not found");
+        await db.DeleteToDoAsync(request.Id, request.UserId, cancellationToken);
         return new SuccessResult();
     }
 }

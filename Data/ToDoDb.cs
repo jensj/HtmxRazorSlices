@@ -4,16 +4,16 @@ namespace HtmxRazorSlices.Data;
 
 public class ToDoDb : IToDoDb
 {
-    private readonly List<ToDo> _todos = [new ToDo { Description = "Feed the cat", DueDate = DateOnly.FromDateTime(DateTime.Now) }, new ToDo { Description = "Water the plants", DueDate = DateOnly.FromDateTime(DateTime.Now).AddDays(2) }];
+    private readonly List<ToDo> _todos = [];
 
-    public Task<IOrderedEnumerable<ToDo>> GetAllToDosAsync(CancellationToken cancellationToken)
+    public Task<IOrderedEnumerable<ToDo>> GetAllToDosAsync(string userId, CancellationToken cancellationToken)
     {
-        return Task.FromResult(_todos.OrderBy(t => t.DueDate));
+        return Task.FromResult(_todos.Where(t => t.UserId == userId).OrderBy(t => t.DueDate));
     }
 
-    public Task<ToDo?> GetToDoAsync(string id, CancellationToken cancellationToken)
+    public Task<ToDo?> GetToDoAsync(string id, string userId, CancellationToken cancellationToken)
     {
-        return Task.FromResult(_todos.Find(x => x.Id == id));
+        return Task.FromResult(_todos.Find(x => x.Id == id && x.UserId == userId));
     }
 
     public Task<ToDo> CreateToDoAsync(ToDo todo, CancellationToken cancellationToken)
@@ -24,14 +24,14 @@ public class ToDoDb : IToDoDb
 
     public Task<ToDo> UpdateToDoAsync(ToDo todo, CancellationToken cancellationToken)
     {
-        _todos.RemoveAll(x => x.Id == todo.Id);
+        _todos.RemoveAll(x => x.Id == todo.Id && x.UserId == todo.UserId);
         _todos.Add(todo);
         return Task.FromResult(todo);
     }
 
-    public Task DeleteToDoAsync(string id, CancellationToken cancellationToken)
+    public Task DeleteToDoAsync(string id, string userId, CancellationToken cancellationToken)
     {
-        _todos.RemoveAll(x => x.Id == id);
+        _todos.RemoveAll(x => x.Id == id && x.UserId == userId);
         return Task.CompletedTask;
     }
 }
