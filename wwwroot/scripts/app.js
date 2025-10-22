@@ -1,5 +1,19 @@
 ﻿// User identifier management
 function getUserId() {
+    // Check if userId is provided in URL query parameter first
+    const urlParams = new URLSearchParams(window.location.search);
+    const userIdFromUrl = urlParams.get('userId');
+    
+    if (userIdFromUrl) {
+        // Store the userId from URL in localStorage
+        localStorage.setItem('userId', userIdFromUrl);
+        // Clean up URL by removing the userId parameter
+        urlParams.delete('userId');
+        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+        window.history.replaceState({}, '', newUrl);
+        return userIdFromUrl;
+    }
+    
     let userId = localStorage.getItem('userId');
     if (!userId) {
         userId = generateGuid();
