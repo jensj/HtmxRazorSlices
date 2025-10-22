@@ -9,7 +9,7 @@ public class ToggleToDoCommandHandler(IToDoDb db) : IRequestHandler<ToggleToDoCo
 {
     public async Task<Result<ToDo>> Handle(ToggleToDoCommand request, CancellationToken cancellationToken)
     {
-        var toDo = await db.GetToDoAsync(request.Id, cancellationToken);
+        var toDo = await db.GetToDoAsync(request.Id, request.UserId, cancellationToken);
         if (toDo == null) return new ErrorResult<ToDo>("Not found");
 
         toDo.CompletedDate = toDo.CompletedDate.HasValue ? null : DateOnly.FromDateTime(DateTime.Today);

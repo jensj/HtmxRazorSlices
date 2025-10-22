@@ -15,6 +15,7 @@ builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(Program).
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddSingleton<IToDoDb>(new ToDoDb());
+builder.Services.AddScoped<IUserIdentifierService, UserIdentifierService>();
 
 builder.Services.AddAntiforgery();
 
