@@ -100,6 +100,16 @@
         </div>
     </div>
 </div>
-<a href="swagger/index.html">Swagger</a>
+<a href="swagger/index.html">Swagger</a> | <a href="#" id="shareLink">Share this session</a>
+<script>
+    // Generate shareable link with current userId
+    document.addEventListener('DOMContentLoaded', function() {
+        const shareLinkElement = document.getElementById('shareLink');
+        const userId = getUserId();
+        const shareUrl = window.location.origin + window.location.pathname + '?userId=' + userId;
+        shareLinkElement.href = shareUrl;
+        shareLinkElement.title = 'Share this link to give others access to your data';
+    });
+</script>
 </body>
 </html>
